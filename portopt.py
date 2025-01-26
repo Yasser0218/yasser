@@ -13,7 +13,7 @@ st.title("Portfolio Optimization and Risk Analysis Tool")
 
 # Sidebar for user input
 st.sidebar.header("User Input")
-tickers = st.sidebar.text_input("Enter stock tickers (comma-separated)", "AAPL,MSFT,GOOG,AMZN,TSLA")
+tickers = st.sidebar.text_input("Enter stock tickers (comma-separated)", "AAPL,MSFT,BKE,PFE,TSLA")
 start_date = st.sidebar.text_input("Start Date (YYYY-MM-DD)", "2020-01-01")
 end_date = st.sidebar.text_input("End Date (YYYY-MM-DD)", "2023-01-01")
 
