@@ -84,7 +84,8 @@ try:
     st.write(f"- Value at Risk (VaR) at {confidence_level*100:.0f}% confidence: {var*100:.2f}%")
     st.write(f"- Conditional Value at Risk (CVaR): {cvar*100:.2f}%")
 
-    # Fetch benchmark data 
+    # Fetch benchmark data
+    benchmark_data = get_Benchmark(start_date, end_date)
     benchmark_returns = benchmark.pct_change()
 
     # Calculate VaR and CVaR for the benchmark
