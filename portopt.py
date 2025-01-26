@@ -52,7 +52,8 @@ try:
     # Plot Efficient Frontier
     st.write("#### Efficient Frontier")
     fig, ax = plt.subplots()
-    plotting.plot_efficient_frontier(ef, ax=ax, show_assets=True)
+    ef_plot = EfficientFrontier(mu, S)
+    plotting.plot_efficient_frontier(ef_plot, ax=ax, show_assets=True)
     st.pyplot(fig)
 
     # Risk Analysis: Value at Risk (VaR) and Conditional VaR (CVaR)
