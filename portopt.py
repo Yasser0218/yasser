@@ -20,7 +20,7 @@ end_date = st.sidebar.text_input("End Date (YYYY-MM-DD)", "2023-01-01")
 # Fetch data from Yahoo Finance
 @st.cache_data
 def get_data(tickers, start_date, end_date):
-    data = yf.download(tickers, start=start_date, end=end_date)["Adj Close"]
+    data = yf.download(tickers, start=start_date, end=end_date)["Close"]
     data = data.dropna()  # Drop rows with missing values
     return data
 
