@@ -14,8 +14,10 @@ st.title("Portfolio Optimization and Risk Analysis Tool")
 # Sidebar for user input
 st.sidebar.header("User Input")
 tickers = st.sidebar.text_input("Enter stock tickers (comma-separated)", "AAPL,MSFT,GOOG,AMZN,TSLA")
+Benchmark = st.sidebar.text_input("Enter Index tickers", "^GSPC")
 start_date = st.sidebar.text_input("Start Date (YYYY-MM-DD)", "2020-01-01")
 end_date = st.sidebar.text_input("End Date (YYYY-MM-DD)", "2023-01-01")
+
 
 # Fetch data from Yahoo Finance
 @st.cache_data
@@ -24,10 +26,10 @@ def get_data(tickers, start_date, end_date):
     data = data.dropna()  # Drop rows with missing values
     return data
 
-# Fetch benchmark data (S&P 500)
+# Fetch benchmark data 
 @st.cache_data
 def get_benchmark_data(start_date, end_date):
-    benchmark = yf.download("^GSPC", start=start_date, end=end_date)["Adj Close"]  # S&P 500 ticker: ^GSPC
+    benchmark = yf.download("^GSPC", start=start_date, end=end_date)["Close"]  # S&P 500 ticker: ^GSPC
     benchmark = benchmark.dropna()  # Drop rows with missing values
     return benchmark
 
@@ -67,7 +69,8 @@ try:
     # Plot Efficient Frontier
     st.write("#### Efficient Frontier")
     fig, ax = plt.subplots()
-    plotting.plot_efficient_frontier(ef, ax=ax, show_assets=True)
+    ef_plot = EfficientFrontier(mu, S)
+    plotting.plot_efficient_frontier(ef_plot, ax=ax, show_assets=True)
     st.pyplot(fig)
 
     # Risk Analysis: Value at Risk (VaR) and Conditional VaR (CVaR)
