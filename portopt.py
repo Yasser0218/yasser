@@ -13,19 +13,34 @@ st.title("Portfolio Optimization and Risk Analysis Tool")
 
 # Sidebar for user input
 st.sidebar.header("User Input")
-tickers = st.sidebar.text_input("Enter stock tickers (comma-separated)", "AAPL,MSFT,BKE,PFE,TSLA")
+tickers = st.sidebar.text_input("Enter stock tickers (comma-separated)", "AAPL,MSFT,GOOG,AMZN,TSLA")
 start_date = st.sidebar.text_input("Start Date (YYYY-MM-DD)", "2020-01-01")
 end_date = st.sidebar.text_input("End Date (YYYY-MM-DD)", "2023-01-01")
 
 # Fetch data from Yahoo Finance
 @st.cache_data
 def get_data(tickers, start_date, end_date):
-    data = yf.download(tickers, start=start_date, end=end_date)["Close"]
+    data = yf.download(tickers, start=start_date, end=end_date)["Adj Close"]
+    data = data.dropna()  # Drop rows with missing values
     return data
 
+# Fetch benchmark data (S&P 500)
+@st.cache_data
+def get_benchmark_data(start_date, end_date):
+    benchmark = yf.download("^GSPC", start=start_date, end=end_date)["Adj Close"]  # S&P 500 ticker: ^GSPC
+    benchmark = benchmark.dropna()  # Drop rows with missing values
+    return benchmark
+
+# Calculate VaR and CVaR
+def calculate_risk_metrics(returns, confidence_level=0.95):
+    var = returns.quantile(1 - confidence_level)
+    cvar = returns[returns <= var].mean()
+    return var, cvar
+
 try:
+    # Fetch portfolio data
     tickers = tickers.split(",")
-    data = get_data.dropna(tickers, start_date, end_date)
+    data = get_data(tickers, start_date, end_date)
     st.write("### Historical Stock Prices")
     st.line_chart(data)
 
@@ -52,8 +67,7 @@ try:
     # Plot Efficient Frontier
     st.write("#### Efficient Frontier")
     fig, ax = plt.subplots()
-    ef_plot = EfficientFrontier(mu, S)
-    plotting.plot_efficient_frontier(ef_plot, ax=ax, show_assets=True)
+    plotting.plot_efficient_frontier(ef, ax=ax, show_assets=True)
     st.pyplot(fig)
 
     # Risk Analysis: Value at Risk (VaR) and Conditional VaR (CVaR)
@@ -61,20 +75,34 @@ try:
     returns = data.pct_change().dropna()
     portfolio_returns = (returns * pd.Series(cleaned_weights)).sum(axis=1)
 
-    # Calculate VaR and CVaR
+    # Calculate VaR and CVaR for the portfolio
     confidence_level = 0.95
-    var = portfolio_returns.quantile(1 - confidence_level)
-    cvar = portfolio_returns[portfolio_returns <= var].mean()
-
+    var, cvar = calculate_risk_metrics(portfolio_returns, confidence_level)
     st.write(f"- Value at Risk (VaR) at {confidence_level*100:.0f}% confidence: {var*100:.2f}%")
     st.write(f"- Conditional Value at Risk (CVaR): {cvar*100:.2f}%")
 
-    # Plot Portfolio Returns Distribution
-    st.write("#### Portfolio Returns Distribution")
+    # Fetch benchmark data (S&P 500)
+    benchmark_data = get_benchmark_data(start_date, end_date)
+    benchmark_returns = benchmark_data.pct_change().dropna()
+
+    # Calculate VaR and CVaR for the benchmark
+    benchmark_var, benchmark_cvar = calculate_risk_metrics(benchmark_returns, confidence_level)
+    st.write("### Benchmark Comparison (S&P 500)")
+    st.write(f"- Benchmark VaR at {confidence_level*100:.0f}% confidence: {benchmark_var*100:.2f}%")
+    st.write(f"- Benchmark CVaR: {benchmark_cvar*100:.2f}%")
+
+    # Compare portfolio and benchmark risk metrics
+    st.write("### Risk Comparison")
+    st.write(f"- Portfolio VaR is **{'higher' if var > benchmark_var else 'lower'}** than the benchmark.")
+    st.write(f"- Portfolio CVaR is **{'higher' if cvar > benchmark_cvar else 'lower'}** than the benchmark.")
+
+    # Plot Portfolio vs Benchmark Returns Distribution
+    st.write("#### Portfolio vs Benchmark Returns Distribution")
     fig, ax = plt.subplots()
-    portfolio_returns.hist(bins=50, ax=ax, alpha=0.75)
-    ax.axvline(var, color="red", linestyle="--", label=f"VaR at {confidence_level*100:.0f}%")
-    ax.axvline(cvar, color="green", linestyle="--", label="CVaR")
+    portfolio_returns.hist(bins=50, ax=ax, alpha=0.75, label="Portfolio Returns")
+    benchmark_returns.hist(bins=50, ax=ax, alpha=0.75, label="Benchmark Returns")
+    ax.axvline(var, color="red", linestyle="--", label=f"Portfolio VaR at {confidence_level*100:.0f}%")
+    ax.axvline(benchmark_var, color="blue", linestyle="--", label=f"Benchmark VaR at {confidence_level*100:.0f}%")
     ax.legend()
     st.pyplot(fig)
 
