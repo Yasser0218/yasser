@@ -14,7 +14,7 @@ st.title("Portfolio Optimization and Risk Analysis Tool")
 # Sidebar for user input
 st.sidebar.header("User Input")
 tickers = st.sidebar.text_input("Enter stock tickers (comma-separated)", "AAPL,MSFT,GOOG,AMZN,TSLA")
-Benchmark = st.sidebar.text_input("Enter Index tickers", "^GSPC")
+Benchmark = st.sidebar.text_input("Enter Index ticker", "^GSPC")
 start_date = st.sidebar.text_input("Start Date (YYYY-MM-DD)", "2020-01-01")
 end_date = st.sidebar.text_input("End Date (YYYY-MM-DD)", "2023-01-01")
 
@@ -29,7 +29,7 @@ def get_data(tickers, start_date, end_date):
 # Fetch benchmark data 
 @st.cache_data
 def get_benchmark_data(start_date, end_date):
-    benchmark = yf.download("^GSPC", start=start_date, end=end_date)["Close"]  # S&P 500 ticker: ^GSPC
+    benchmark = yf.download(Benchmark, start=start_date, end=end_date)["Close"]  
     benchmark = benchmark.dropna()  # Drop rows with missing values
     return benchmark
 
