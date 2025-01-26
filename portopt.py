@@ -86,7 +86,7 @@ try:
 
     # Fetch benchmark data
     benchmark_data = get_benchmark_data(start_date, end_date)
-    benchmark_returns = benchmark.pct_change()
+    benchmark_returns = benchmark_data.pct_change()
 
     # Calculate VaR and CVaR for the benchmark
     benchmark_var, benchmark_cvar = calculate_risk_metrics(benchmark_returns, confidence_level)
