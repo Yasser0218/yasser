@@ -25,7 +25,7 @@ def get_data(tickers, start_date, end_date):
 
 try:
     tickers = tickers.split(",")
-    data = get_data(tickers, start_date, end_date)
+    data = get_data.dropna(tickers, start_date, end_date)
     st.write("### Historical Stock Prices")
     st.line_chart(data)
 
