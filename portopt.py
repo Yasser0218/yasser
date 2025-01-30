@@ -16,7 +16,7 @@ st.sidebar.header("User Input")
 tickers = st.sidebar.text_input("Enter stock tickers (comma-separated)", "AAPL,MSFT,GOOG,AMZN,TSLA")
 Benchmark = st.sidebar.text_input("Enter Index ticker", "^GSPC")
 start_date = st.sidebar.text_input("Start Date (YYYY-MM-DD)", "2020-01-01")
-end_date = st.sidebar.text_input("End Date (YYYY-MM-DD)", "2023-01-01")
+end_date = st.sidebar.text_input("End Date (YYYY-MM-DD)", "2024-01-01")
 
 
 # Fetch data from Yahoo Finance
@@ -49,7 +49,9 @@ try:
     # Calculate expected returns and covariance matrix
     mu = expected_returns.mean_historical_return(data)
     S = risk_models.sample_cov(data)
-
+    St.write("###Correlation Matrix")
+    S
+   
     # Portfolio Optimization
     st.write("### Portfolio Optimization")
     ef = EfficientFrontier(mu, S)
@@ -65,6 +67,17 @@ try:
     st.write(f"- Expected Annual Return: {performance[0]*100:.2f}%")
     st.write(f"- Annual Volatility: {performance[1]*100:.2f}%")
     st.write(f"- Sharpe Ratio: {performance[2]:.2f}")
+
+    # Fama-French three factor Model
+    url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_Daily_CSV.zip"  
+    df_FF=pd.read_csv(url,skiprows=4)  
+    df_FF.columns = ['Date', 'Mkt-RF', 'SMB', 'HML', 'RF']  
+    df_FF['Date'] = pd.to_datetime(df_FF['Date'], format='%Y%m%d',errors='coerce')   #set the date format
+    df_FF.dropna()
+    target_df = df_FF[(df_FF['Date'] >= '2020-01-01') & (df_FF['Date'] <= '2024-01-01')]  #select the target date
+    portfolio_three_factor = target_df.merge([performance['Daily Return','Date']], on='Date', how='left')
+    FFmodel=sm.OLS(portfolio_three_factor['Daily Return'],sm.add_constant(portfolio_three_factor.loc[:,['Mkt-RF','SMB','HML']])).fit()
+    FFmodel.summary()
 
     # Plot Efficient Frontier
     st.write("#### Efficient Frontier")
